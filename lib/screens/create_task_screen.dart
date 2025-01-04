@@ -62,10 +62,12 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
               ),
               SizedBox(height: 30),
               ElevatedButton(
-                  onPressed: _createTask,
-                  child: const DisplayWhiteText(
-                    text: 'Save ',
-                  )),
+                onPressed: _createTask,
+                child: Text(
+                  'Save',
+                  style: TextStyle(fontSize: 20, color: Colors.purple),
+                ),
+              ),
             ],
           ),
         ),

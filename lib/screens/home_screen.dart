@@ -82,7 +82,11 @@ class HomeScreen extends ConsumerWidget {
                         onPressed: () => context.push(RouteLocation.createTask),
                         child: const Padding(
                           padding: EdgeInsets.all(8.0),
-                          child: DisplayWhiteText(text: 'New Task'),
+                          child: Text(
+                            'Add Task',
+                            style:
+                                TextStyle(fontSize: 20, color: Colors.purple),
+                          ),
                         ),
                       ),
                     ],
