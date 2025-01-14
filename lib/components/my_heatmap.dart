@@ -5,7 +5,6 @@ import 'package:trackers_app/utils/extensions.dart';
 class MyHeatmap extends StatelessWidget {
   final Map<DateTime, int> datasets;
   final DateTime startdate;
-  //final DateEnd enddate;
 
   const MyHeatmap({
     super.key,
@@ -35,3 +34,9 @@ class MyHeatmap extends StatelessWidget {
     );
   }
 }
+
+
+//static Widget builder(BuildContext context, GoRouterState state,
+        //  {required DateTime startdate,
+          //required Map<DateTime, int> datasets}) =>
+      //MyHeatmap(startdate: startdate, datasets: datasets);

@@ -1,7 +1,10 @@
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:trackers_app/data/models/task.dart';
 import 'package:trackers_app/utils/db_keys.dart';
+
+final DateFormat dateFormat = DateFormat('MMM dd, yyyy');
 
 class TaskDatasource {
   static final TaskDatasource _instace = TaskDatasource._();
@@ -91,5 +94,24 @@ class TaskDatasource {
       data.length,
       (index) => Task.fromJson(data[index]),
     );
+  }
+
+  Future<Map<DateTime, int>> getTasksCountByDate() async {
+    final db = await database;
+
+    // Exécuter une requête SQL pour compter les tâches terminées par date
+    final result = await db.rawQuery('''
+      SELECT ${DBKeys.dateColumn} AS date, COUNT(*) AS count
+      FROM ${DBKeys.dbTable}
+      WHERE ${DBKeys.isCompletedColumn} = 1
+      GROUP BY ${DBKeys.dateColumn}
+    ''');
+
+    // Transformer les résultats en un Map<DateTime, int>
+    return {
+      for (var row in result)
+        //verifier si l'on peut utiliser Datetime now()
+        dateFormat.parse(row['date'] as String): row['count'] as int,
+    };
   }
 }

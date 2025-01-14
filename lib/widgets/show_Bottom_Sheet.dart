@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:trackers_app/config/routes/route_location.dart';
 
 void showCustomBottomSheet(BuildContext context) {
   showModalBottomSheet(
@@ -27,7 +29,8 @@ void showCustomBottomSheet(BuildContext context) {
               leading: const Icon(Icons.calendar_today, color: Colors.purple),
               title: const Text('Check Your Heatmap'),
               onTap: () {
-                Navigator.pop(context);
+                context.push(RouteLocation.heatMap);
+                //Navigator.pop(context);
                 print("Check Your Heatmap sélectionné");
               },
             ),

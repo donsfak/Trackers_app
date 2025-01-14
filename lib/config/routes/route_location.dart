@@ -6,4 +6,5 @@ class RouteLocation {
 
   static String get home => '/home';
   static String get createTask => '/createTask';
+  static String get heatMap => '/heatMap';
 }

@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
 import 'package:equatable/equatable.dart';
-
 import 'package:trackers_app/utils/utils.dart';
 
 class Task extends Equatable {
@@ -12,6 +11,7 @@ class Task extends Equatable {
   final String date;
   final TaskCategories category;
   final bool isCompleted;
+
   const Task({
     this.id,
     required this.title,
@@ -34,6 +34,9 @@ class Task extends Equatable {
     ];
   }
 
+  // Getter pour la date au format DateTime
+  //DateTime get parsedDate => DateTime.parse(date);
+
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       TaskKeys.id: id,
@@ -47,15 +50,19 @@ class Task extends Equatable {
   }
 
   factory Task.fromJson(Map<String, dynamic> map) {
-    return Task(
-      id: map[TaskKeys.id],
-      title: map[TaskKeys.title],
-      note: map[TaskKeys.note],
-      time: map[TaskKeys.time],
-      date: map[TaskKeys.date],
-      category: TaskCategories.stringToCategory(map[TaskKeys.category]),
-      isCompleted: map[TaskKeys.isCompleted] == 1 ? true : false,
-    );
+    try {
+      return Task(
+        id: map[TaskKeys.id],
+        title: map[TaskKeys.title],
+        note: map[TaskKeys.note],
+        time: map[TaskKeys.time],
+        date: map[TaskKeys.date],
+        category: TaskCategories.stringToCategory(map[TaskKeys.category]),
+        isCompleted: map[TaskKeys.isCompleted] == 1,
+      );
+    } catch (e) {
+      throw FormatException('Erreur dans les données du modèle Task : $e');
+    }
   }
 
   Task copyWith({
