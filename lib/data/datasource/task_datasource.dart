@@ -110,7 +110,6 @@ class TaskDatasource {
     // Transformer les résultats en un Map<DateTime, int>
     return {
       for (var row in result)
-        //verifier si l'on peut utiliser Datetime now()
         dateFormat.parse(row['date'] as String): row['count'] as int,
     };
   }

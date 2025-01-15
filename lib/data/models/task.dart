@@ -34,9 +34,6 @@ class Task extends Equatable {
     ];
   }
 
-  // Getter pour la date au format DateTime
-  //DateTime get parsedDate => DateTime.parse(date);
-
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       TaskKeys.id: id,

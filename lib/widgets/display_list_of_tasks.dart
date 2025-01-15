@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:trackers_app/config/routes/route_location.dart';
 import 'package:trackers_app/providers/task/task_provider.dart';
 import 'package:trackers_app/utils/utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,6 +59,10 @@ class DisplayListOfTasks extends ConsumerWidget {
                           return TaskDetails(task: task);
                         },
                       );
+                    },
+                    //modify task
+                    onDoubleTap: () async {
+                      context.push(RouteLocation.modifyTask);
                     },
                     child: TaskTitle(
                       task: task,

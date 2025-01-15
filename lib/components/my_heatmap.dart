@@ -1,6 +1,8 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
-import 'package:trackers_app/utils/extensions.dart';
+import 'package:intl/intl.dart';
 
 class MyHeatmap extends StatelessWidget {
   final Map<DateTime, int> datasets;
@@ -14,29 +16,35 @@ class MyHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HeatMap(
-      startDate: startdate,
-      endDate: DateTime.now(),
-      datasets: datasets,
-      colorMode: ColorMode.color,
-      defaultColor: context.colorScheme.surface,
-      textColor: Colors.white,
-      showColorTip: false,
-      showText: true,
-      scrollable: true,
-      size: 30,
-      colorsets: {
-        1: Colors.green.shade300,
-        2: Colors.green.shade400,
-        3: Colors.green.shade500,
-        4: Colors.green.shade600,
-      },
+    return Column(
+      children: [
+        _buildMonthsRow(),
+        HeatMap(
+          startDate: startdate,
+          endDate: DateTime.now(),
+          datasets: datasets,
+          colorMode: ColorMode.color,
+          showColorTip: false,
+          colorsets: {
+            1: Colors.green.shade200,
+            2: Colors.green.shade300,
+            3: Colors.green.shade400,
+            4: Colors.green.shade500,
+            5: Colors.green.shade800,
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMonthsRow() {
+    final months = List.generate(
+        12, (index) => DateFormat.MMM().format(DateTime(0, index + 1)));
+    return Row(
+      //mainAxisAlignment: MainAxisAlignment.center,
+
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      //children: months.map((month) => Text(month)).toList(),
     );
   }
 }
-
-
-//static Widget builder(BuildContext context, GoRouterState state,
-        //  {required DateTime startdate,
-          //required Map<DateTime, int> datasets}) =>
-      //MyHeatmap(startdate: startdate, datasets: datasets);

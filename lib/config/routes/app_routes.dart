@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trackers_app/config/routes/routes.dart';
 import 'package:trackers_app/screens/heatmap_screen.dart';
+import 'package:trackers_app/screens/modify_task_screen.dart';
 import 'package:trackers_app/screens/screens.dart';
 
 final navigationKey = GlobalKey<NavigatorState>();
@@ -21,5 +22,10 @@ final appRoutes = [
     path: RouteLocation.heatMap,
     parentNavigatorKey: navigationKey,
     builder: (HeatmapScreen.builder),
+  ),
+  GoRoute(
+    path: RouteLocation.modifyTask,
+    parentNavigatorKey: navigationKey,
+    builder: (ModifyTaskScreen.builder),
   ),
 ];

@@ -29,19 +29,11 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
   }
 
   Future<void> _loadHeatmapData() async {
-    // Charger les données depuis la base de données
     final taskDatasource = TaskDatasource();
-    final datasets = await taskDatasource.getTasksCountByDate();
-
-    // Mettre à jour l'état
-    setState(() {
-      _datasets = datasets;
-      _isLoading = false;
-    });
     try {
-      final datasets = await taskDatasource.getTasksCountByDate();
+      final data = await taskDatasource.getTasksCountByDate();
       setState(() {
-        _datasets = datasets;
+        _datasets = data;
         _isLoading = false;
       });
     } catch (e) {
@@ -63,9 +55,12 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : MyHeatmap(
-              startdate: _startDate,
-              datasets: _datasets,
+          : Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: MyHeatmap(
+                startdate: _startDate,
+                datasets: _datasets,
+              ),
             ),
     );
   }

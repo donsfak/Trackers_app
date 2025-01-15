@@ -57,4 +57,10 @@ class Helpers {
       ref.read(dateProvider.notifier).state = pickedDate;
     }
   }
+
+  static TimeOfDay stringToTime(String time) {
+    final format = DateFormat.jm(); //"6:00 AM"
+
+    return TimeOfDay.fromDateTime(format.parse(time));
+  }
 }
