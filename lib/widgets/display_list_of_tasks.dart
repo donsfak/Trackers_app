@@ -60,9 +60,11 @@ class DisplayListOfTasks extends ConsumerWidget {
                         },
                       );
                     },
-                    //modify task
                     onDoubleTap: () async {
-                      context.push(RouteLocation.modifyTask);
+                      context.push(
+                        RouteLocation.modifyTask,
+                        extra: task, // Passer la tâche actuelle
+                      );
                     },
                     child: TaskTitle(
                       task: task,

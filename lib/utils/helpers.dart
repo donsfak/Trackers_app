@@ -63,4 +63,9 @@ class Helpers {
 
     return TimeOfDay.fromDateTime(format.parse(time));
   }
+
+  static TimeOfDay stringToTimeOfDay(String time) {
+    final format = DateFormat.jm();
+    return TimeOfDay.fromDateTime(format.parse(time));
+  }
 }

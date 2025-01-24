@@ -1,18 +1,33 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:trackers_app/config/routes/routes.dart';
-import 'package:trackers_app/utils/utils.dart';
-import 'package:trackers_app/widgets/widgets.dart';
-
-import '../data/data.dart';
-import '../providers/providers.dart';
+import 'package:trackers_app/config/routes/route_location.dart';
+import 'package:trackers_app/data/models/task.dart';
+import 'package:trackers_app/providers/category_provider.dart';
+import 'package:trackers_app/providers/date_provider.dart';
+import 'package:trackers_app/providers/task/task_provider.dart';
+import 'package:trackers_app/providers/time_provider.dart';
+import 'package:trackers_app/utils/app_alert.dart';
+import 'package:trackers_app/utils/helpers.dart';
+import 'package:trackers_app/widgets/common_text_field.dart';
+import 'package:trackers_app/widgets/display_white_text.dart';
+import 'package:trackers_app/widgets/select_category.dart';
+import 'package:trackers_app/widgets/select_date_time.dart'; // Ensure this import is correct
 
 class ModifyTaskScreen extends ConsumerStatefulWidget {
-  static ModifyTaskScreen builder(BuildContext context, GoRouterState state) =>
-      const ModifyTaskScreen();
-  const ModifyTaskScreen({super.key});
+  final Task task;
+
+  const ModifyTaskScreen({super.key, required this.task});
+
+  static ModifyTaskScreen builder(BuildContext context, GoRouterState state) {
+    final task = state.extra as Task?;
+    if (task == null) {
+      throw Exception('No task provided to ModifyTaskScreen');
+    }
+    return ModifyTaskScreen(task: task);
+  }
 
   @override
   ConsumerState<ModifyTaskScreen> createState() => _ModifyTaskScreenState();
@@ -21,6 +36,23 @@ class ModifyTaskScreen extends ConsumerStatefulWidget {
 class _ModifyTaskScreenState extends ConsumerState<ModifyTaskScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize fields with the values of the received task
+    _titleController.text = widget.task.title;
+    _noteController.text = widget.task.note;
+
+    // Delay the state updates to avoid modifying providers during widget lifecycle
+    Future.microtask(() {
+      ref.read(dateProvider.notifier).state =
+          DateFormat.yMMMd().parse(widget.task.date);
+      ref.read(timeProvider.notifier).state =
+          Helpers.stringToTimeOfDay(widget.task.time);
+    });
+  }
 
   @override
   void dispose() {
@@ -34,37 +66,36 @@ class _ModifyTaskScreenState extends ConsumerState<ModifyTaskScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const DisplayWhiteText(
-          text: 'Add Task',
+          text: 'Modify Task',
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               CommonTextField(
-                title: 'TaskTitle',
-                hintText: 'TaskTitle',
+                title: 'Task Title',
+                hintText: 'Task Title',
                 controller: _titleController,
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               const SelectCategory(),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               SelectDateTime(),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               CommonTextField(
                 title: 'Note',
                 hintText: 'Task Note',
                 maxLines: 6,
                 controller: _noteController,
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               ElevatedButton(
-                onPressed: _createTask,
-                child: Text(
-                  'Save',
+                onPressed: _updateTask,
+                child: const Text(
+                  'Update',
                   style: TextStyle(fontSize: 20, color: Colors.purple),
                 ),
               ),
@@ -75,31 +106,19 @@ class _ModifyTaskScreenState extends ConsumerState<ModifyTaskScreen> {
     );
   }
 
-  void _createTask() async {
-    final title = _titleController.text.trim();
-    final note = _noteController.text.trim();
-    final date = ref.watch(dateProvider);
-    final time = ref.watch(timeProvider);
-    final category = ref.watch(categoryProvider);
+  void _updateTask() async {
+    final updatedTask = widget.task.copyWith(
+      title: _titleController.text.trim(),
+      note: _noteController.text.trim(),
+      date: DateFormat.yMMMd().format(ref.read(dateProvider)),
+      time: Helpers.timeToString(ref.read(timeProvider)),
+      isCompleted: widget.task.isCompleted,
+      category: ref.read(categoryProvider),
+    );
 
-    if (title.isNotEmpty) {
-      final task = Task(
-        title: title,
-        note: note,
-        date: DateFormat.yMMMd().format(date),
-        time: Helpers.timeToString(time),
-        category: category,
-        isCompleted: false,
-      );
-
-      await ref.read(taskProvider.notifier).createTask(task).then((value) {
-        // ignore: use_build_context_synchronously
-        AppAlert.displaysnackbar(context, 'Task created successfully');
-        // ignore: use_build_context_synchronously
-        context.go(RouteLocation.home);
-      });
-    } else {
-      AppAlert.displaysnackbar(context, 'Task title cannot be empty');
-    }
+    await ref.read(taskProvider.notifier).updateTask(updatedTask).then((_) {
+      AppAlert.displaysnackbar(context, 'Task updated successfully');
+      context.go(RouteLocation.home);
+    });
   }
 }
