@@ -21,13 +21,14 @@ class TaskNotifier extends StateNotifier<TaskState> {
 
   Future<void> updateTask(Task task) async {
     try {
-      final completed = !task.isCompleted;
-      // ignore: unused_local_variable
-      final updatedTask = task.copyWith(isCompleted: completed);
-      await _repository.updateTask(updatedTask);
-      getTasks();
+      // Mise à jour de la tâche avec la nouvelle valeur d'achèvement
+      await _repository.updateTask(task);
+
+      // Recharger la liste des tâches après la mise à jour
+      final updatedTasks = await _repository.getAllTasks();
+      state = state.copyWith(tasks: updatedTasks);
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint('Erreur lors de la mise à jour de la tâche : ${e.toString()}');
     }
   }
 

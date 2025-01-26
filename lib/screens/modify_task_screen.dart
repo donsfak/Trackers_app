@@ -9,7 +9,6 @@ import 'package:trackers_app/providers/category_provider.dart';
 import 'package:trackers_app/providers/date_provider.dart';
 import 'package:trackers_app/providers/task/task_provider.dart';
 import 'package:trackers_app/providers/time_provider.dart';
-import 'package:trackers_app/utils/app_alert.dart';
 import 'package:trackers_app/utils/helpers.dart';
 import 'package:trackers_app/widgets/common_text_field.dart';
 import 'package:trackers_app/widgets/display_white_text.dart';
@@ -116,8 +115,8 @@ class _ModifyTaskScreenState extends ConsumerState<ModifyTaskScreen> {
       category: ref.read(categoryProvider),
     );
 
-    await ref.read(taskProvider.notifier).updateTask(updatedTask).then((_) {
-      AppAlert.displaysnackbar(context, 'Task updated successfully');
+    ref.read(taskProvider.notifier).updateTask(updatedTask).then((_) {
+      ref.read(taskProvider.notifier).getTasks();
       context.go(RouteLocation.home);
     });
   }

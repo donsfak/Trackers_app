@@ -14,7 +14,10 @@ import 'task_details.dart'; // Import the TaskDetails widget
 
 class DisplayListOfTasks extends ConsumerWidget {
   const DisplayListOfTasks(
-      {super.key, required this.tasks, this.isCompletedTasks = false});
+      {super.key,
+      required this.tasks,
+      this.isCompletedTasks = false,
+      required void Function(dynamic task) onTaskToggle});
   final List<Task> tasks;
   final bool isCompletedTasks;
 
