@@ -1,53 +1,69 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // Le plugin Flutter doit être appliqué après Android et Kotlin
     id "dev.flutter.flutter-gradle-plugin"
 }
 
 android {
     namespace = "ci.room.trackers_app"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 34  // Remplace par la bonne valeur de compileSdk
+
+    ndkVersion = "25.2.9519653"  // Ajoute une version explicite si nécessaire
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
+        jvmTarget = "11"
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "ci.room.trackers_app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        minSdk = 21  // Assurez-vous que cette valeur est correcte
+        targetSdk = 33
+        versionCode = 1
+        versionName = "1.0"
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            minifyEnabled false  // Désactiver la minification pour le debug
+            shrinkResources false
+            signingConfig signingConfigs.debug  // Utilisation de la signature de debug
+        }
+    }
+
+    // Ajout pour améliorer la compatibilité des architectures
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 }
 
+// Définir le chemin source de Flutter
 flutter {
     source = "../.."
 }
+
 // Dépendances Android
 dependencies {
-    implementation "androidx.core:core-ktx:1.10.1"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"
+    implementation "androidx.core:core-ktx:1.12.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
     implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "com.google.android.material:material:1.9.0"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
-    implementation "androidx.activity:activity-ktx:1.7.2"
+    implementation "com.google.android.material:material:1.10.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
+    implementation "androidx.activity:activity-ktx:1.8.0"
+}
+
+// Forcer les dépendances Kotlin pour éviter les conflits de version
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.jetbrains.kotlin') {
+            details.useVersion '1.9.0'
+        }
+    }
 }
