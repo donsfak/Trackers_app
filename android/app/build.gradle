@@ -1,15 +1,12 @@
 plugins {
     id "com.android.application"
-    id "kotlin-android"
-    // Le plugin Flutter doit être appliqué après Android et Kotlin
+    id "org.jetbrains.kotlin.android" version "1.9.22"
     id "dev.flutter.flutter-gradle-plugin"
 }
 
 android {
     namespace = "ci.room.trackers_app"
-    compileSdk = 34  // Remplace par la bonne valeur de compileSdk
-
-    ndkVersion = "25.2.9519653"  // Ajoute une version explicite si nécessaire
+    compileSdk 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -17,53 +14,40 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
     defaultConfig {
-        applicationId = "ci.room.trackers_app"
-        minSdk = 21  // Assurez-vous que cette valeur est correcte
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        applicationId "ci.room.trackers_app"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
     }
 
     buildTypes {
         release {
-            minifyEnabled false  // Désactiver la minification pour le debug
+            minifyEnabled false
             shrinkResources false
-            signingConfig signingConfigs.debug  // Utilisation de la signature de debug
+            signingConfig signingConfigs.debug
         }
     }
 
-    // Ajout pour améliorer la compatibilité des architectures
     packagingOptions {
-        jniLibs {
-            useLegacyPackaging = true
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 }
 
-// Définir le chemin source de Flutter
 flutter {
-    source = "../.."
+    source "../.."
 }
 
-// Dépendances Android
 dependencies {
     implementation "androidx.core:core-ktx:1.12.0"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
     implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "com.google.android.material:material:1.10.0"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
-    implementation "androidx.activity:activity-ktx:1.8.0"
-}
-
-// Forcer les dépendances Kotlin pour éviter les conflits de version
-configurations.all {
-    resolutionStrategy.eachDependency { details ->
-        if (details.requested.group == 'org.jetbrains.kotlin') {
-            details.useVersion '1.9.0'
-        }
-    }
+    implementation "com.google.android.material:material:1.11.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.1"
+    implementation "androidx.activity:activity-ktx:1.9.0"
 }
