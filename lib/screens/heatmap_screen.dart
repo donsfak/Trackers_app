@@ -58,7 +58,7 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
           : Padding(
               padding: const EdgeInsets.all(8.0),
               child: MyHeatmap(
-                startdate: _startDate,
+                startDate: _startDate,
                 datasets: _datasets,
               ),
             ),
