@@ -1,13 +1,15 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:trackers_app/providers/date_provider.dart';
-
 import '../data/models/task.dart';
 
 class Helpers {
   Helpers._();
 
+  // Convertit TimeOfDay en String (ex: "6:00 AM")
   static String timeToString(TimeOfDay time) {
     try {
       final DateTime now = DateTime.now();
@@ -20,29 +22,38 @@ class Helpers {
       );
       return DateFormat.jm().format(date);
     } catch (e) {
-      return '12:00 PM';
+      return '12:00 PM'; // Valeur par défaut en cas d'erreur
     }
   }
-  //
 
+  // Vérifie si une tâche correspond à la date sélectionnée
   static bool isTaskFromSelectedDate(Task task, DateTime selectedDate) {
     final DateTime taskDate = _stringToDateTime(task.date);
-    if (taskDate.year == selectedDate.year &&
-        taskDate.month == selectedDate.month &&
-        taskDate.day == selectedDate.day) {
-      return true;
-    }
-    return false;
+    final DateTime normalizedSelectedDate = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+    );
+    print('Date de la tâche: ${task.date}');
+    print('Date convertie: $taskDate');
+    print('Date sélectionnée normalisée: $normalizedSelectedDate');
+    return taskDate.year == normalizedSelectedDate.year &&
+        taskDate.month == normalizedSelectedDate.month &&
+        taskDate.day == normalizedSelectedDate.day;
   }
 
+  // Convertit une String en DateTime
   static DateTime _stringToDateTime(String dateString) {
     try {
-      return DateFormat.yMMMd().parse(dateString);
+      return DateFormat('MMM dd, yyyy')
+          .parse(dateString); // Format correspondant à "Feb 24, 2025"
     } catch (e) {
-      return DateTime.now();
+      print('Erreur de parsing de la date: $e');
+      return DateTime.now(); // Retourne la date actuelle en cas d'erreur
     }
   }
 
+  // Permet à l'utilisateur de sélectionner une date
   static selectDate(BuildContext context, WidgetRef ref) async {
     final initialDate = ref.read(dateProvider);
     DateTime? pickedDate = await showDatePicker(
@@ -52,18 +63,14 @@ class Helpers {
       lastDate: DateTime(2090),
     );
 
-    //
-    ref.read(dateProvider.notifier).state = pickedDate!;
+    if (pickedDate != null) {
+      ref.read(dateProvider.notifier).state = pickedDate;
+    }
   }
 
-  static TimeOfDay stringToTime(String time) {
-    final format = DateFormat.jm(); //"6:00 AM"
-
-    return TimeOfDay.fromDateTime(format.parse(time));
-  }
-
+  // Convertit une String en TimeOfDay
   static TimeOfDay stringToTimeOfDay(String time) {
-    final format = DateFormat.jm();
+    final format = DateFormat.jm(); // Format "6:00 AM"
     return TimeOfDay.fromDateTime(format.parse(time));
   }
 }

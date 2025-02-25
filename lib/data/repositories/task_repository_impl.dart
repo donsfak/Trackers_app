@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:trackers_app/data/data.dart';
 
 class TaskRepositoryImpl implements TaskRepository {
@@ -24,9 +26,13 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
+  @override
   Future<List<Task>> getAllTasks() async {
     try {
-      return await _datasource.getAllTasks();
+      final tasks = await _datasource.getAllTasks();
+      print(
+          'Tâches récupérées depuis la base de données: ${tasks.length}'); // Log pour déboguer
+      return tasks;
     } catch (e) {
       throw '$e';
     }

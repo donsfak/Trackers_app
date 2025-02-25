@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -88,12 +90,9 @@ class TaskDatasource {
 
   Future<List<Task>> getAllTasks() async {
     final db = await database;
-    final List<Map<String, dynamic>> data =
-        await db.query(DBKeys.dbTable, orderBy: "id DESC");
-    return List.generate(
-      data.length,
-      (index) => Task.fromJson(data[index]),
-    );
+    final List<Map<String, dynamic>> data = await db.query(DBKeys.dbTable);
+    print('Données brutes de la base de données: $data'); // Log pour déboguer
+    return List.generate(data.length, (index) => Task.fromJson(data[index]));
   }
 
   Future<Map<DateTime, int>> getTasksCountByDate() async {

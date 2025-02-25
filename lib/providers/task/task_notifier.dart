@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trackers_app/data/data.dart';
@@ -45,6 +47,7 @@ class TaskNotifier extends StateNotifier<TaskState> {
     try {
       final tasks = await _repository.getAllTasks();
       state = state.copyWith(tasks: tasks);
+      print('Tâches chargées: ${tasks.length}'); // Log pour déboguer
     } catch (e) {
       debugPrint(e.toString());
     }

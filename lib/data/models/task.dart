@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-
 import 'package:equatable/equatable.dart';
 import 'package:trackers_app/utils/utils.dart';
 
@@ -54,7 +53,8 @@ class Task extends Equatable {
         note: map[TaskKeys.note],
         time: map[TaskKeys.time],
         date: map[TaskKeys.date],
-        category: TaskCategories.stringToCategory(map[TaskKeys.category]),
+        category: TaskCategoriesExtension.stringToCategory(
+            map[TaskKeys.category] ?? 'home'),
         isCompleted: map[TaskKeys.isCompleted] == 1,
       );
     } catch (e) {
