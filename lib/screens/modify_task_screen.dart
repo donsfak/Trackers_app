@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:trackers_app/data/models/task.dart';
 import 'package:trackers_app/providers/category_provider.dart';
 import 'package:trackers_app/providers/date_provider.dart';
@@ -48,8 +47,7 @@ class _ModifyTaskScreenState extends ConsumerState<ModifyTaskScreen> {
 
     // Delay the state updates to avoid modifying providers during widget lifecycle
     Future.microtask(() {
-      ref.read(dateProvider.notifier).state =
-          DateFormat.yMMMd().parse(widget.task.date);
+      ref.read(dateProvider.notifier).state = widget.task.date;
       ref.read(timeProvider.notifier).state =
           Helpers.stringToTimeOfDay(widget.task.time);
       ref.read(categoryProvider.notifier).state =
@@ -298,7 +296,7 @@ class _ModifyTaskScreenState extends ConsumerState<ModifyTaskScreen> {
     final updatedTask = widget.task.copyWith(
       title: title,
       note: note,
-      date: DateFormat.yMMMd().format(date),
+      date: date,
       time: Helpers.timeToString(time),
       category: category,
       isCompleted: widget.task.isCompleted,

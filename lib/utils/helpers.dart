@@ -28,7 +28,8 @@ class Helpers {
 
   // Vérifie si une tâche correspond à la date sélectionnée
   static bool isTaskFromSelectedDate(Task task, DateTime selectedDate) {
-    final DateTime taskDate = _stringToDateTime(task.date);
+    final DateTime taskDate =
+        _stringToDateTime(DateFormat('MMM dd, yyyy').format(task.date));
     final DateTime normalizedSelectedDate = DateTime(
       selectedDate.year,
       selectedDate.month,

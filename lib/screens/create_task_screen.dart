@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:trackers_app/config/routes/routes.dart';
 import 'package:trackers_app/utils/utils.dart';
 import 'package:trackers_app/widgets/widgets.dart';
@@ -278,7 +277,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
     final task = Task(
       title: title,
       note: note,
-      date: DateFormat.yMMMd().format(date),
+      date: date,
       time: Helpers.timeToString(time),
       category: category,
       isCompleted: false,
