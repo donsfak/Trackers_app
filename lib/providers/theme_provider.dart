@@ -1,29 +1,45 @@
+// lib/providers/theme_provider.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// Optionnel: pour la persistance
+// import 'package:shared_preferences/shared_preferences.dart';
 
-// Define light and dark themes
-final ThemeData lightMode = ThemeData.light().copyWith(
-  primaryColor: Colors.purple,
-  colorScheme: const ColorScheme.light(primary: Colors.purple),
-);
+// Le Notifier qui contient la logique et l'état (le ThemeMode)
+class ThemeNotifier extends StateNotifier<ThemeMode> {
+  // Initialiser l'état (ex: ThemeMode.system)
+  ThemeNotifier() : super(ThemeMode.system) {
+    // Optionnel: Charger la préférence sauvegardée au démarrage
+    // _loadThemeMode();
+  }
 
-final ThemeData darkMode = ThemeData.dark().copyWith(
-  primaryColor: Colors.deepPurple,
-  colorScheme: const ColorScheme.dark(primary: Colors.deepPurple),
-);
+  // Future<void> _loadThemeMode() async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final themeIndex = prefs.getInt('themeMode') ?? ThemeMode.system.index;
+  //     state = ThemeMode.values[themeIndex];
+  //   } catch (e) {
+  //     // Gérer l'erreur si SharedPreferences échoue
+  //     print("Erreur chargement thème: $e");
+  //     state = ThemeMode.system;
+  //   }
+  // }
 
-// StateNotifier to manage theme state
-class ThemeNotifier extends StateNotifier<ThemeData> {
-  ThemeNotifier() : super(lightMode);
+  void setThemeMode(ThemeMode mode) async {
+    if (state == mode) return;
+    state = mode; // Met à jour l'état géré par StateNotifier
 
-  bool get isDarkMode => state == darkMode;
-
-  void toggleTheme() {
-    state = isDarkMode ? lightMode : darkMode;
+    // Optionnel: Sauvegarder la préférence
+    // try {
+    //   final prefs = await SharedPreferences.getInstance();
+    //   await prefs.setInt('themeMode', mode.index);
+    // } catch (e) {
+    //   print("Erreur sauvegarde thème: $e");
+    // }
   }
 }
 
-// Define a provider for the theme
-final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeData>((ref) {
+// Le Provider immuable qui expose le ThemeNotifier
+final themeNotifierProvider =
+    StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
   return ThemeNotifier();
 });

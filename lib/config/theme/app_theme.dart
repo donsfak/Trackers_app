@@ -1,42 +1,17 @@
-import 'package:flex_color_scheme/flex_color_scheme.dart';
+// lib/config/theme/app_theme.dart
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'light_mode.dart';
+import 'dark_mode.dart';
 
-@immutable
-class AppTheme {
-  const AppTheme._();
+// Option 1: Export simple (suffisant pour ce cas)
+// (Pas besoin de classe, juste exporter depuis theme.dart)
 
-  static final light = FlexThemeData.light(
-    //theme config//
-    scheme: FlexScheme.deepPurple,
-    surfaceMode: FlexSurfaceMode.highScaffoldLowSurfacesVariantDialog,
-    blendLevel: 40,
-    appBarStyle: FlexAppBarStyle.primary,
-    appBarOpacity: 0.95,
-    appBarElevation: 0,
-    transparentStatusBar: true,
-    tabBarStyle: FlexTabBarStyle.forBackground,
-    tooltipsMatchBackground: true,
-    swapColors: true,
-    lightIsWhite: true,
-    visualDensity: FlexColorScheme.comfortablePlatformDensity,
-    fontFamily: GoogleFonts.dekko().fontFamily,
-    subThemesData: const FlexSubThemesData(
-      // ignore: deprecated_member_use
-      useTextTheme: true,
-      fabUseShape: true,
-      interactionEffects: true,
-      bottomNavigationBarElevation: 0,
-      bottomNavigationBarOpacity: 1,
-      navigationBarOpacity: 1,
-      navigationBarMutedUnselectedIcon: true,
-      inputDecoratorIsFilled: true,
-      inputDecoratorBorderType: FlexInputBorderType.outline,
-      inputDecoratorUnfocusedHasBorder: true,
-      blendOnColors: true,
-      // ignore: deprecated_member_use
-      blendTextTheme: true,
-      popupMenuOpacity: 0.95,
-    ),
-  );
+// OU Option 2: Classe d'accès statique
+class AppThemes {
+  static final ThemeData light = lightMode;
+  static final ThemeData dark = darkMode;
 }
+
+// Mettez à jour theme.dart pour exporter correctement
+// lib/config/theme/theme.dart
+// Exportez aussi le provider

@@ -5,4 +5,5 @@ abstract class TaskRepository {
   Future<void> updateTask(Task task);
   Future<void> deleteTask(Task task);
   Future<List<Task>> getAllTasks();
+  Future<Map<DateTime, int>> getTasksCountByDate();
 }
