@@ -2,95 +2,91 @@
 
 // ignore_for_file: avoid_print
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // Pour @immutable si TaskState ici
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trackers_app/data/data.dart';
-import 'package:trackers_app/providers/task/task_state.dart'; // Importer TaskState
+import 'package:trackers_app/providers/task/task_state.dart';
+// Importer les exceptions spécifiques
+import 'package:trackers_app/data/repositories/repository_exception.dart';
 
-// Assurez-vous que taskProvider est défini (probablement dans task_provider.dart)
-// final taskProvider = StateNotifierProvider<TaskNotifier, TaskState>((ref) {
-//   final repository = ref.watch(taskRepositoryProvider);
-//   return TaskNotifier(repository);
-// });
+// final taskProvider = StateNotifierProvider<TaskNotifier, TaskState>((ref) { /* ... */ });
 
 class TaskNotifier extends StateNotifier<TaskState> {
   final TaskRepository _repository;
+
+  // Assurez-vous d'utiliser la version de TaskState avec isLoading et error
   TaskNotifier(this._repository) : super(const TaskState.initial()) {
-    //chargement initial des tâches pour la liste principale
     getTasks();
   }
 
   Future<void> createTask(Task task) async {
-    state = state.copyWith(isLoading: true); // Optionnel: indiquer chargement
+    // Début action, indiquer chargement, effacer erreur précédente
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       await _repository.createTask(task);
-      await getTasks(); // Recharge toutes les tâches après création
-    } catch (e) {
-      debugPrint(e.toString());
+      await getTasks(); // Recharge la liste (met à jour loading/success)
+    } on RepositoryException catch (e) {
+      // Erreur spécifique du Repository attrapée
+      debugPrint("TaskNotifier createTask Repo Error: $e");
       state = state.copyWith(
-          isLoading: false, error: e.toString()); // Gérer l'erreur
+          isLoading: false,
+          error:
+              e.message); // Met à jour l'état avec le message d'erreur du Repo
+    } catch (e) {
+      // Attraper toute autre erreur inattendue
+      debugPrint("TaskNotifier createTask Unexpected Error: $e");
+      state = state.copyWith(
+          isLoading: false,
+          error: "Impossible de créer la tâche."); // Message générique
     }
   }
 
   Future<void> updateTask(Task task) async {
-    state = state.copyWith(isLoading: true); // Optionnel: indiquer chargement
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       await _repository.updateTask(task);
-      // Recharger la liste des tâches après la mise à jour (plus simple que de modifier localement)
-      await getTasks();
+      await getTasks(); // Recharge
+    } on RepositoryException catch (e) {
+      debugPrint("TaskNotifier updateTask Repo Error: $e");
+      state = state.copyWith(isLoading: false, error: e.message);
     } catch (e) {
-      debugPrint('Erreur lors de la mise à jour de la tâche : ${e.toString()}');
+      debugPrint("TaskNotifier updateTask Unexpected Error: $e");
       state = state.copyWith(
-          isLoading: false, error: e.toString()); // Gérer l'erreur
+          isLoading: false, error: "Impossible de mettre à jour la tâche.");
     }
   }
 
   Future<void> deleteTask(Task task) async {
-    state = state.copyWith(isLoading: true); // Optionnel: indiquer chargement
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       await _repository.deleteTask(task);
-      await getTasks(); // Recharge toutes les tâches après suppression
+      await getTasks(); // Recharge
+    } on RepositoryException catch (e) {
+      debugPrint("TaskNotifier deleteTask Repo Error: $e");
+      state = state.copyWith(isLoading: false, error: e.message);
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("TaskNotifier deleteTask Unexpected Error: $e");
       state = state.copyWith(
-          isLoading: false, error: e.toString()); // Gérer l'erreur
+          isLoading: false, error: "Impossible de supprimer la tâche.");
     }
   }
 
   Future<void> getTasks() async {
-    state = state.copyWith(isLoading: true, error: null); // Début chargement
+    // Début chargement, efface erreur précédente
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final tasks = await _repository.getAllTasks();
-      state = state.copyWith(
-          tasks: tasks, isLoading: false); // Fin chargement succès
+      state = state.copyWith(tasks: tasks, isLoading: false); // Succès
       print('Tâches chargées: ${tasks.length}');
-    } catch (e) {
-      debugPrint(e.toString());
+    } on RepositoryException catch (e) {
+      debugPrint("TaskNotifier getTasks Repo Error: $e");
       state = state.copyWith(
-          isLoading: false, error: e.toString()); // Fin chargement erreur
+          isLoading: false, error: e.message); // Erreur spécifique
+    } catch (e) {
+      debugPrint("TaskNotifier getTasks Unexpected Error: $e");
+      state = state.copyWith(
+          isLoading: false,
+          error: "Erreur chargement tâches."); // Erreur générique
     }
   }
-
-  // Le getter taskHeatmapData a été retiré car nous utilisons heatmapDataProvider
 }
-
-// Assurez-vous que TaskState a les champs nécessaires (tasks, isLoading, error)
-// Exemple dans lib/providers/task/task_state.dart
-// @immutable
-// class TaskState {
-//   final List<Task> tasks;
-//   final bool isLoading;
-//   final String? error;
-
-//   const TaskState({required this.tasks, this.isLoading = false, this.error});
-
-//   const TaskState.initial() : tasks = const [], isLoading = false, error = null;
-
-//   TaskState copyWith({List<Task>? tasks, bool? isLoading, String? error}) {
-//     return TaskState(
-//       tasks: tasks ?? this.tasks,
-//       isLoading: isLoading ?? this.isLoading,
-//       error: error ?? this.error,
-//     );
-//   }
-// }

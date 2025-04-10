@@ -7,16 +7,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:trackers_app/data/data.dart';
-// Assurez-vous que themeNotifierProvider est exporté depuis providers.dart ou importé directement
+// Assurez-vous que tous les providers sont correctement exportés ou importés
 import 'package:trackers_app/providers/providers.dart';
 import 'package:trackers_app/screens/create_task_screen.dart';
 import 'package:trackers_app/widgets/show_bottom_sheet.dart';
 import 'package:trackers_app/utils/utils.dart';
 import 'package:trackers_app/widgets/widgets.dart';
-// Assurez-vous d'importer vos routes si vous utilisez GoRouter pour la navigation
+// Import pour la navigation GoRouter si utilisée
 // import '../config/routes/route_location.dart';
 
-// Convertir en ConsumerWidget pour un accès direct à ref
 class HomeScreen extends ConsumerWidget {
   static HomeScreen builder(BuildContext context, GoRouterState state) =>
       const HomeScreen();
@@ -24,23 +23,19 @@ class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  // Ajout de WidgetRef ref ici
   Widget build(BuildContext context, WidgetRef ref) {
+    // Récupération des thèmes et dimensions
     final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme; // Récupérer le textTheme
+    final textTheme = Theme.of(context).textTheme;
     final deviceSize = MediaQuery.of(context).size;
 
-    // Utiliser 'ref' directement car c'est un ConsumerWidget
+    // Lecture des états depuis Riverpod
     final taskState =
-        ref.watch(taskProvider); // taskProvider doit être un provider Riverpod
-    final selectDate =
-        ref.watch(dateProvider); // dateProvider doit être un provider Riverpod
-    // --- Ajout pour le thème ---
+        ref.watch(taskProvider); // Contient tasks, isLoading, error
+    final selectDate = ref.watch(dateProvider);
     final currentThemeMode = ref.watch(themeNotifierProvider);
-    // --- Fin Ajout ---
 
-    // --- Filtrage des tâches intégré ici ---
-    // S'assurer que taskState.tasks existe bien (ajuster si la structure de TaskState est différente)
+    // Filtrage des tâches pour la date sélectionnée
     final List<Task> tasksForSelectedDate = taskState.tasks
         .where((task) => Helpers.isTaskFromSelectedDate(task, selectDate))
         .toList();
@@ -48,38 +43,23 @@ class HomeScreen extends ConsumerWidget {
         tasksForSelectedDate.where((task) => task.isCompleted).toList();
     final incompletedTasks =
         tasksForSelectedDate.where((task) => !task.isCompleted).toList();
-    // --- Fin Filtrage ---
 
-    // --- La logique onPressed pour la navigation AVEC animation ---
+    // Fonction pour naviguer vers l'écran de création avec animation
     void navigateToCreateTask() {
       Navigator.of(context).push(
         PageRouteBuilder(
-          pageBuilder: (
-            BuildContext context,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-          ) =>
-              CreateTaskScreen(), // Assurez-vous que c'est bien un Widget
-          transitionsBuilder: (
-            BuildContext context,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-            Widget child,
-          ) {
-            return ScaleTransition(
-              // Garde l'animation
-              scale: animation,
-              child: child,
-            );
+          pageBuilder: (ctx, anim1, anim2) => CreateTaskScreen(),
+          transitionsBuilder: (ctx, anim1, anim2, child) {
+            return ScaleTransition(scale: anim1, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 300), // Optionnel
+          transitionDuration: const Duration(milliseconds: 300),
         ),
       );
-      // Ou: context.push(RouteLocation.createTask); // Si GoRouter configuré
+      // Alternative GoRouter: context.push(RouteLocation.createTask);
     }
-    // --- Fin logique onPressed ---
 
     return Scaffold(
+      // AppBar configurée
       appBar: AppBar(
         backgroundColor: colors.primary,
         elevation: 0,
@@ -96,7 +76,7 @@ class HomeScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            // Bouton Thème
+            // Bouton pour changer le thème
             icon: Icon(
               currentThemeMode == ThemeMode.light
                   ? Icons.dark_mode_outlined
@@ -121,167 +101,193 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
+
+      // FloatingActionButton pour l'ajout
       floatingActionButton: FloatingActionButton(
-        // FAB pour ajouter
         onPressed: navigateToCreateTask,
         tooltip: 'Ajouter une tâche',
         child: const Icon(Icons.add),
       ),
+
+      // Corps principal
       body: Column(
         children: [
-          // Affichage de la date
+          // Affichage de la date sélectionnée
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10.0),
             child: InkWell(
               onTap: () => Helpers.selectDate(context, ref),
               child: Text(
-                DateFormat.yMMMd().format(selectDate),
+                DateFormat.yMMMd().format(selectDate), // Format d'affichage
                 style: textTheme.titleMedium?.copyWith(color: colors.primary),
               ),
             ),
           ),
 
-          // Section des tâches
+          // Section principale avec la liste des tâches
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                  20, 0, 20, 80), // Padding bas pour FAB
+              // Padding en bas pour ne pas masquer le contenu avec le FAB
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 80),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // --- Tâches incomplètes ---
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            // En-tête
-                            children: [
-                              Icon(Icons.assignment_outlined,
-                                  color: colors.primary),
-                              const SizedBox(width: 10),
-                              Text(
-                                'Tâches à faire',
-                                style: textTheme.headlineSmall
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-
-                          // --- GESTION ÉTAT VIDE (Suggestion 1) ---
-                          if (incompletedTasks.isEmpty)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 32.0),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                  // --- GESTION ÉTAT GLOBAL (Chargement Initial / Erreur Initiale) ---
+                  if (taskState.isLoading && taskState.tasks.isEmpty)
+                    // Affiche un loader seulement au premier chargement
+                    const Center(
+                        child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 64.0),
+                            child: CircularProgressIndicator()))
+                  else if (taskState.error != null && taskState.tasks.isEmpty)
+                    // Affiche une erreur seulement si le premier chargement échoue
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32.0),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline,
+                                color: colors.error, size: 40),
+                            const SizedBox(height: 8),
+                            Text("Erreur: ${taskState.error}",
+                                textAlign: TextAlign.center),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.refresh),
+                              label: const Text("Réessayer"),
+                              // Style pour bouton d'erreur (optionnel)
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: colors.errorContainer,
+                                  foregroundColor: colors.onErrorContainer),
+                              onPressed: () => ref
+                                  .read(taskProvider.notifier)
+                                  .getTasks(), // Action Réessayer
+                            )
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    // Si pas de chargement/erreur initiaux OU si on a déjà des tâches,
+                    // on affiche les cartes des listes de tâches.
+                    Column(
+                      children: [
+                        // Carte Tâches Incomplètes
+                        Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  // En-tête
                                   children: [
-                                    Icon(
-                                      Icons
-                                          .check_circle_outline, // Icône état vide
-                                      size: 40,
-                                      color: colors.primary.withOpacity(0.5),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Aucune tâche à faire !',
-                                      textAlign: TextAlign.center,
-                                      style: textTheme.bodyMedium?.copyWith(
-                                          color: colors.onSurface
-                                              .withOpacity(0.6)),
-                                    ),
+                                    Icon(Icons.assignment_outlined,
+                                        color: colors.primary),
+                                    const SizedBox(width: 10),
+                                    Text('Tâches à faire',
+                                        style: textTheme.headlineSmall
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.bold)),
                                   ],
                                 ),
-                              ),
-                            )
-                          else
-                            DisplayListOfTasks(
-                              tasks: incompletedTasks,
-                              // isCompletedTasks: false, // Valeur par défaut, pas besoin de spécifier
-                              // Pas besoin de onTaskToggle ici si géré dans DisplayListOfTasks/ListTile
+                                const SizedBox(height: 10),
+                                // Affichage liste ou état vide
+                                if (incompletedTasks.isEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 32.0),
+                                    child: Center(
+                                      child: Column(
+                                        children: [
+                                          Icon(Icons.check_circle_outline,
+                                              size: 40,
+                                              color: colors.primary
+                                                  .withOpacity(0.5)),
+                                          const SizedBox(height: 8),
+                                          Text('Aucune tâche à faire !',
+                                              style: textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                      color: colors.onSurface
+                                                          .withOpacity(0.6))),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  // Assurez-vous que DisplayListOfTasks a été mis à jour (avec Dismissible, ListTile, etc.)
+                                  DisplayListOfTasks(tasks: incompletedTasks),
+                              ],
                             ),
-                          // --- FIN GESTION ÉTAT VIDE ---
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // --- Tâches complètes ---
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            // En-tête
-                            children: [
-                              Icon(Icons.check_circle_outline,
-                                  color: colors.primary),
-                              const SizedBox(width: 10),
-                              Text(
-                                'Tâches terminées',
-                                style: textTheme.headlineSmall
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ],
                           ),
-                          const SizedBox(height: 10),
+                        ),
+                        const SizedBox(height: 20),
 
-                          // --- GESTION ÉTAT VIDE (Suggestion 1) ---
-                          if (completedTasks.isEmpty)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 32.0),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                        // Carte Tâches Complètes
+                        Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  // En-tête
                                   children: [
-                                    Icon(
-                                      Icons
-                                          .sentiment_very_satisfied_outlined, // Icône état vide
-                                      size: 40,
-                                      color: colors.onSurface.withOpacity(0.4),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Aucune tâche terminée pour le moment.',
-                                      textAlign: TextAlign.center,
-                                      style: textTheme.bodyMedium?.copyWith(
-                                          color: colors.onSurface
-                                              .withOpacity(0.6)),
-                                    ),
+                                    Icon(Icons.check_circle_outline,
+                                        color: colors.primary),
+                                    const SizedBox(width: 10),
+                                    Text('Tâches terminées',
+                                        style: textTheme.headlineSmall
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.bold)),
                                   ],
                                 ),
-                              ),
-                            )
-                          else
-                            DisplayListOfTasks(
-                              tasks: completedTasks,
-                              isCompletedTasks: true,
-                              // Pas besoin de onTaskToggle ici si géré dans DisplayListOfTasks/ListTile
+                                const SizedBox(height: 10),
+                                // Affichage liste ou état vide
+                                if (completedTasks.isEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 32.0),
+                                    child: Center(
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                              Icons
+                                                  .sentiment_very_satisfied_outlined,
+                                              size: 40,
+                                              color: colors.onSurface
+                                                  .withOpacity(0.4)),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              'Aucune tâche terminée pour le moment.',
+                                              style: textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                      color: colors.onSurface
+                                                          .withOpacity(0.6))),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  // Assurez-vous que DisplayListOfTasks a été mis à jour
+                                  DisplayListOfTasks(
+                                      tasks: completedTasks,
+                                      isCompletedTasks: true),
+                              ],
                             ),
-                          // --- FIN GESTION ÉTAT VIDE ---
-                        ],
-                      ),
+                          ),
+                        ),
+                        const SizedBox(height: 20), // Espace final
+                      ],
                     ),
-                  ),
-                  const SizedBox(
-                      height:
-                          20), // Espace avant la fin effective du contenu scrollable
+                  // --- FIN GESTION ÉTAT GLOBAL ---
                 ],
               ),
             ),
@@ -290,10 +296,4 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
-
-  // Les méthodes _completedTasks et _incompletedTasks ne sont plus nécessaires ici
-  // car le filtrage est fait directement dans la méthode build.
-
-  // La méthode _toggleTaskCompletion n'est plus nécessaire ici car la logique
-  // est maintenant dans le onChanged du Checkbox dans DisplayListOfTasks (via ListTile).
 }
