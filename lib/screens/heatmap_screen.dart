@@ -28,8 +28,7 @@ class HeatmapScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-            'Heatmap (Tâches Complétées)'), // Préciser ce qui est affiché
+        title: const Text('Tâches Complétées'), // Préciser ce qui est affiché
       ),
       // Utiliser .when pour gérer les états de AsyncValue (loading, error, data)
       body: heatmapDataAsync.when(

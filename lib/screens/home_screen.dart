@@ -1,5 +1,3 @@
-// lib/screens/home_screen.dart
-
 // ignore_for_file: avoid_print, use_build_context_synchronously, unused_local_variable, deprecated_member_use
 
 import 'package:flutter/material.dart';
@@ -7,14 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:trackers_app/data/data.dart';
-// Assurez-vous que tous les providers sont correctement exportés ou importés
 import 'package:trackers_app/providers/providers.dart';
 import 'package:trackers_app/screens/create_task_screen.dart';
 import 'package:trackers_app/widgets/show_bottom_sheet.dart';
 import 'package:trackers_app/utils/utils.dart';
 import 'package:trackers_app/widgets/widgets.dart';
-// Import pour la navigation GoRouter si utilisée
-// import '../config/routes/route_location.dart';
 
 class HomeScreen extends ConsumerWidget {
   static HomeScreen builder(BuildContext context, GoRouterState state) =>
