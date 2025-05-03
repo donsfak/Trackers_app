@@ -59,7 +59,7 @@ class MyHeatmap extends StatelessWidget {
           defaultColor: theme.colorScheme.onSurface
               .withOpacity(0.1), // Couleur par défaut plus subtile
           textColor: theme.colorScheme.onSurface, // Couleur du texte adaptable
-          size: 14, // Légèrement plus grand peut-être ?
+          size: 08, // Légèrement plus grand peut-être ?
           fontSize: 10, // Taille police jours (CE PARAMÈTRE EXISTE)
 
           onClick: (date) {

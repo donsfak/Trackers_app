@@ -58,7 +58,7 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: colors.primary,
         elevation: 0,
-        title: const Text('Mon Todo List',
+        title: const Text('Todo List',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
         leading: IconButton(
