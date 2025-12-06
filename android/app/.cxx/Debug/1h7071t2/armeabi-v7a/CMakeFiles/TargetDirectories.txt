@@ -1,0 +1,2 @@
+H:/StudioProject/trackers_app/android/app/.cxx/Debug/1h7071t2/armeabi-v7a/CMakeFiles/edit_cache.dir
+H:/StudioProject/trackers_app/android/app/.cxx/Debug/1h7071t2/armeabi-v7a/CMakeFiles/rebuild_cache.dir
