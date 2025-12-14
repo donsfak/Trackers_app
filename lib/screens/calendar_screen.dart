@@ -132,13 +132,22 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                         const TextStyle(color: Colors.white)),
                                 subtitle: Text(task.time,
                                     style: const TextStyle(color: Colors.grey)),
-                                trailing: Icon(
+                                trailing: IconButton(
+                                  icon: Icon(
                                     task.isCompleted
                                         ? Icons.check_circle
                                         : Icons.circle_outlined,
                                     color: task.isCompleted
                                         ? Colors.green
-                                        : Colors.grey),
+                                        : Colors.grey,
+                                  ),
+                                  onPressed: () {
+                                    ref.read(taskProvider.notifier).updateTask(
+                                          task.copyWith(
+                                              isCompleted: !task.isCompleted),
+                                        );
+                                  },
+                                ),
                                 onTap: () => context.push(
                                     RouteLocation.modifyTask,
                                     extra: task),
