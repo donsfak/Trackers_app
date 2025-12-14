@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:trackers_app/config/routes/route_location.dart';
 import 'package:trackers_app/data/models/task.dart';
 import 'package:trackers_app/providers/category_provider.dart';
 import 'package:trackers_app/providers/date_provider.dart';
@@ -197,7 +198,42 @@ class _ModifyTaskScreenState extends ConsumerState<ModifyTaskScreen> {
                   minLines: 1,
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
+
+              // 4.5 Focus Action
+              GestureDetector(
+                onTap: () =>
+                    context.push(RouteLocation.focus, extra: widget.task),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                        colors: [Colors.cyan, Colors.purpleAccent]),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.purpleAccent.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.timer, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text("Start Focus Session",
+                          style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
 
               // 5. Action Buttons
               Row(

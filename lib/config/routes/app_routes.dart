@@ -7,6 +7,8 @@ import 'package:trackers_app/screens/heatmap_screen.dart';
 import 'package:trackers_app/screens/modify_task_screen.dart';
 import 'package:trackers_app/screens/screens.dart';
 import 'package:trackers_app/screens/ai_chat_screen.dart';
+import 'package:trackers_app/screens/focus_screen.dart'; // Added import for FocusScreen
+import 'package:trackers_app/data/data.dart'; // Added import for Task model
 
 final navigationKey = GlobalKey<NavigatorState>();
 late final DateTime startdate;
@@ -33,5 +35,13 @@ final appRoutes = [
     path: RouteLocation.aiChat,
     parentNavigatorKey: navigationKey,
     builder: AiChatScreen.builder,
+  ),
+  GoRoute(
+    path: RouteLocation.focus,
+    parentNavigatorKey: navigationKey,
+    builder: (context, state) {
+      final task = state.extra as Task?;
+      return FocusScreen(task: task);
+    },
   ),
 ];

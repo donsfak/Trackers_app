@@ -7,6 +7,7 @@ class RouteLocation {
   static String get home => '/home';
   static String get createTask => '/createTask';
   static String get heatMap => '/heatMap';
-  static String get modifyTask => '/modifyTask';
+  static const String modifyTask = '/modifyTask';
+  static const String focus = '/focus';
   static String get aiChat => '/aiChat';
 }
