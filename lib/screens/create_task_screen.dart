@@ -468,20 +468,43 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
     setState(() => _isSaving = true);
 
     try {
+      final date = ref.read(dateProvider);
+      final time = ref.read(timeProvider);
+      final timeString = Helpers.timeToString(time);
+
       final task = Task(
-        title: title,
+        title: _titleController.text.trim(),
         note: _noteController.text.trim(),
-        date: ref.read(dateProvider),
-        time: Helpers.timeToString(ref.read(timeProvider)),
+        date: date,
+        time: timeString,
         category: ref.read(categoryProvider),
         isCompleted: false,
       );
 
       await ref.read(taskProvider.notifier).createTask(task);
-      if (mounted) {
-        AppAlert.displaysnackbar(context, 'Task created!');
-        context.pop();
+
+      try {
+        final DateTime scheduleTime = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          time.hour,
+          time.minute,
+        );
+
+        await AppNotifications.scheduleNotification(
+          id: task.title.hashCode,
+          title: "Reminder: ${task.title}",
+          body: task.note.isNotEmpty ? task.note : "It's time for your task!",
+          scheduledTime: scheduleTime,
+        );
+      } catch (e) {
+        debugPrint("Notification scheduling failed: $e");
       }
+
+      if (!mounted) return;
+      AppAlert.displaysnackbar(context, 'Task created!');
+      context.pop();
     } catch (e) {
       debugPrint("Error: $e");
     } finally {
