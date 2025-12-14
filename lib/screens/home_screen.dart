@@ -8,6 +8,7 @@ import 'package:trackers_app/components/my_heatmap.dart';
 import 'package:trackers_app/config/routes/route_location.dart';
 import 'package:trackers_app/data/data.dart';
 import 'package:trackers_app/providers/providers.dart';
+import 'package:trackers_app/screens/search_screen.dart';
 import 'package:trackers_app/screens/screens.dart';
 import 'package:trackers_app/utils/utils.dart';
 import 'package:trackers_app/providers/heatmap_provider.dart';
@@ -29,9 +30,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Premium Dark Theme Colors
-    final bgColor = Colors.black;
-    final cardColor = Colors.grey[900];
+    // Theme-aware colors
+    final colorScheme = Theme.of(context).colorScheme;
+    final bgColor = colorScheme.surface;
+    final cardColor = colorScheme.surfaceContainer;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -42,9 +44,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _buildDashboard(context), // Index 0
             const CalendarScreen(), // Index 1: Calendar
             _buildHeatmapView(context), // Index 2
-            const Center(
-                child: Text("Profile (Coming Soon)",
-                    style: TextStyle(color: Colors.white))), // Index 3
           ],
         ),
       ),
@@ -64,13 +63,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildNavItem(FontAwesomeIcons.house, 0),
             _buildNavItem(FontAwesomeIcons.solidCalendar, 1),
-            const SizedBox(width: 40), // Gap for FAB
-            _buildNavItem(FontAwesomeIcons.chartSimple, 2), // Heatmap
-            _buildNavItem(FontAwesomeIcons.user, 3),
+            const SizedBox(width: 56), // Gap for FAB
+            _buildNavItem(FontAwesomeIcons.chartSimple, 2),
+            const SizedBox(width: 48), // Balance right side
           ],
         ),
       ),
@@ -89,8 +88,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildDashboard(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final cardColor = Colors.grey[900];
-    final userProfile = 'https://i.pravatar.cc/150?img=12'; // Placeholder
+    final colorScheme = Theme.of(context).colorScheme;
+    // final cardColor = colorScheme.surfaceContainer; // Unused
 
     final taskState = ref.watch(taskProvider);
     final selectDate = ref.watch(dateProvider);
@@ -117,11 +116,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
           child: Row(
             children: [
-              // Settings / Menu
-              IconButton(
-                icon: const FaIcon(FontAwesomeIcons.gear,
-                    color: Colors.grey, size: 20),
-                onPressed: () => context.push(RouteLocation.aiChat),
+              // AI Wizard Button
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.deepPurple.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: const FaIcon(FontAwesomeIcons.wandMagicSparkles,
+                      color: Colors.purpleAccent, size: 18),
+                  onPressed: () => context.push(RouteLocation.aiChat),
+                  tooltip: 'AI Assistant',
+                ),
               ),
               const Spacer(),
               // Search Bar (Functional Material 3)
@@ -129,82 +135,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 flex: 4,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: SearchAnchor(
-                    builder:
-                        (BuildContext context, SearchController controller) {
-                      return SearchBar(
-                        controller: controller,
+                  child: Hero(
+                    tag: 'searchBar',
+                    child: Material(
+                      color: Colors.transparent,
+                      child: SearchBar(
                         padding: const WidgetStatePropertyAll<EdgeInsets>(
                             EdgeInsets.symmetric(horizontal: 16.0)),
                         onTap: () {
-                          controller.openView();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const SearchScreen(),
+                            ),
+                          );
                         },
                         onChanged: (_) {
-                          controller.openView();
+                          // Optional: Pass query to search screen
                         },
-                        leading: const Padding(
-                          padding: EdgeInsets.all(8.0),
+                        leading: Padding(
+                          padding: const EdgeInsets.all(8.0),
                           child: FaIcon(FontAwesomeIcons.magnifyingGlass,
-                              color: Colors.grey, size: 16),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
+                              size: 16),
                         ),
                         hintText: 'Search...',
-                        hintStyle: const WidgetStatePropertyAll(
-                            TextStyle(color: Colors.grey)),
-                        backgroundColor: WidgetStatePropertyAll(cardColor),
+                        hintStyle: WidgetStatePropertyAll(TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6))),
+                        backgroundColor: WidgetStatePropertyAll(
+                            colorScheme.surfaceContainer),
                         elevation: const WidgetStatePropertyAll(0),
-                        // Dark Theme for Search View
-                        textStyle: const WidgetStatePropertyAll(
-                            TextStyle(color: Colors.white)),
-                      );
-                    },
-                    viewBackgroundColor:
-                        Colors.grey[900], // Dark Background for View
-                    viewHintText: 'Search your tasks...',
-                    headerTextStyle: const TextStyle(color: Colors.white),
-                    viewLeading: IconButton(
-                      icon: const FaIcon(FontAwesomeIcons.arrowLeft,
-                          color: Colors.white, size: 16),
-                      onPressed: () => Navigator.of(context).pop(),
+                        textStyle: WidgetStatePropertyAll(TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface)),
+                      ),
                     ),
-                    suggestionsBuilder:
-                        (BuildContext context, SearchController controller) {
-                      final keyword = controller.text.toLowerCase();
-                      final allTasks = taskState.tasks; // Search global tasks
-                      final results = keyword.isEmpty
-                          ? <Task>[]
-                          : allTasks
-                              .where((t) =>
-                                  t.title.toLowerCase().contains(keyword))
-                              .toList();
-
-                      return List<ListTile>.generate(results.length,
-                          (int index) {
-                        final task = results[index];
-                        return ListTile(
-                          title: Text(task.title,
-                              style: const TextStyle(color: Colors.white)),
-                          subtitle: Text(Helpers.dateToString(task.date),
-                              style: const TextStyle(color: Colors.grey)),
-                          onTap: () {
-                            setState(() {
-                              controller.closeView(task.title);
-                              // Navigate to modify or show task
-                              context.push(RouteLocation.modifyTask,
-                                  extra: task);
-                            });
-                          },
-                        );
-                      });
-                    },
                   ),
                 ),
               ),
               const Spacer(),
-              // Profile
-              CircleAvatar(
-                backgroundImage: NetworkImage(userProfile),
-                radius: 18,
-              ),
+              // Theme Toggle Button
+              _buildThemeToggle(),
             ],
           ),
         ),
@@ -220,11 +195,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Text(
                   'Today',
                   style: textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.bold, color: Colors.white),
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface),
                 ),
                 Text(
                   DateFormat('MMM, d • EEEE').format(selectDate),
-                  style: TextStyle(color: Colors.grey[500], fontSize: 16),
+                  style: TextStyle(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                      fontSize: 16),
                 ),
                 const SizedBox(height: 30),
 
@@ -234,7 +215,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       Text('Upcoming focus',
                           style: TextStyle(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 18,
                               fontWeight: FontWeight.bold)),
                       const SizedBox(width: 10),
@@ -245,8 +226,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             color: Colors.grey[800],
                             borderRadius: BorderRadius.circular(12)),
                         child: Text('${upcomingTasks.length} tasks',
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 12)),
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.8),
+                                fontSize: 12)),
                       )
                     ],
                   ),
@@ -261,7 +246,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Text('To-dos',
                         style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 18,
                             fontWeight: FontWeight.bold)),
                     const SizedBox(width: 10),
@@ -272,8 +257,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: Colors.grey[800],
                           borderRadius: BorderRadius.circular(12)),
                       child: Text('${incompleteTasks.length} tasks',
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 12)),
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.8),
+                              fontSize: 12)),
                     )
                   ],
                 ),
@@ -319,11 +308,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Column(
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.all(20),
           child: Text("Activity Overview",
               style: TextStyle(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 24,
                   fontWeight: FontWeight.bold)),
         ),
@@ -375,7 +364,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Text(
             label,
             style: TextStyle(
-                color: isSelected ? Colors.black : Colors.grey[400],
+                color: isSelected
+                    ? (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.black
+                        : Colors.white)
+                    : Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
                 fontWeight: FontWeight.bold),
           ),
         ),
@@ -383,7 +379,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildThemeToggle() {
+    final themeMode = ref.watch(themeNotifierProvider);
+    final isDark = themeMode == ThemeMode.dark || themeMode == ThemeMode.system;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.amber.withValues(alpha: 0.15)
+            : Colors.grey.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: IconButton(
+        icon: FaIcon(
+          isDark ? FontAwesomeIcons.solidSun : FontAwesomeIcons.solidMoon,
+          color: isDark ? Colors.amber : Colors.blueGrey,
+          size: 18,
+        ),
+        onPressed: () {
+          ref.read(themeNotifierProvider.notifier).setThemeMode(
+                isDark ? ThemeMode.light : ThemeMode.dark,
+              );
+        },
+        tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+      ),
+    );
+  }
+
   Widget _buildTimelineCard(List<Task> tasks, BuildContext context) {
+    // Build dynamic time slots from actual tasks
+    final timeSlots = tasks.take(3).map((task) {
+      return {
+        'time': task.time,
+        'title': task.title,
+        'category': task.category
+      };
+    }).toList();
+
     return Container(
       height: 160,
       width: double.infinity,
@@ -399,41 +430,79 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Main upcoming task
           Row(
             children: [
-              Container(width: 4, height: 40, color: Colors.cyanAccent),
+              Container(
+                  width: 4, height: 40, color: tasks.first.category.color),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(tasks.first.title,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text('${tasks.first.time} - Review',
-                      style:
-                          TextStyle(color: Colors.purple[100], fontSize: 12)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tasks.first.title,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 4),
+                    Text(
+                        tasks.first.time.isNotEmpty
+                            ? tasks.first.time
+                            : 'No time set',
+                        style:
+                            TextStyle(color: Colors.purple[100], fontSize: 12)),
+                  ],
+                ),
               ),
-              const Spacer(),
-              const Text('NOW',
-                  style: TextStyle(color: Colors.white54, fontSize: 10)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('NEXT',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+              ),
             ],
           ),
           const Spacer(),
+          // Dynamic time slots row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('||||', style: TextStyle(color: Colors.cyanAccent)),
-              Text('1 PM',
-                  style: TextStyle(color: Colors.white30, fontSize: 10)),
-              Text('||', style: TextStyle(color: Colors.purpleAccent)),
-              Text('3 PM',
-                  style: TextStyle(color: Colors.white30, fontSize: 10)),
-              Text('|||', style: TextStyle(color: Colors.pinkAccent)),
-            ],
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: timeSlots.asMap().entries.map((entry) {
+              final index = entry.key;
+              final slot = entry.value;
+              final colors = [
+                Colors.cyanAccent,
+                Colors.purpleAccent,
+                Colors.pinkAccent
+              ];
+              return Column(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: colors[index % colors.length],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    (slot['time'] as String).isNotEmpty
+                        ? slot['time'] as String
+                        : '--:--',
+                    style: const TextStyle(color: Colors.white54, fontSize: 10),
+                  ),
+                ],
+              );
+            }).toList(),
           )
         ],
       ),

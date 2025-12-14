@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 
 import 'package:trackers_app/data/data.dart';
 import 'package:trackers_app/providers/providers.dart';
@@ -94,7 +93,6 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
         // This is a simplified "apply" logic.
         // In production, we would parse the JSON string safely.
         // For this demo, let's pretend we parsed it into variables.
-        // TODO: Add proper JSON parsing here
       }
 
       if (mounted) {
@@ -118,12 +116,13 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Force Premium Dark Aesthetics regardless of system theme
-    final bgColor = Colors.black;
-    // cardColor unused
-    final selectedCategory = ref.watch(categoryProvider);
-    final selectedDate = ref.watch(dateProvider);
-    final selectedTime = ref.watch(timeProvider);
+    // Theme-aware colors
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Background color based on theme (white or dark grey)
+    final bgColor = isDark ? Colors.black : colorScheme.surface;
+    final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -131,12 +130,14 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
         title: Text(
           'New Task',
           style: GoogleFonts.poppins(
-              color: Colors.white, fontWeight: FontWeight.bold),
+              color: isDark ? Colors.white : Colors.black,
+              fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back,
+              color: isDark ? Colors.white : Colors.black),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -148,162 +149,210 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.purpleAccent))
                 : const Icon(Icons.auto_fix_high, color: Colors.purpleAccent),
-            tooltip: 'Auto-fill Details',
+            tooltip: 'Auto-fill with AI',
             onPressed: _isAnalyzing ? null : _analyzeTaskWithAI,
           )
         ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Title Input (Large, distinct)
-              TextField(
-                controller: _titleController,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                decoration: InputDecoration(
-                  hintText: 'What needs to be done?',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
-                  border: InputBorder.none,
-                ),
-                maxLines: null,
-              ),
-              const SizedBox(height: 24),
-
-              // 2. Category Chips (Pills)
-              Text('Category',
-                  style: TextStyle(color: Colors.grey, fontSize: 16)),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 40,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: TaskCategories.values.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final cat = TaskCategories.values[index];
-                    final isSelected = selectedCategory == cat;
-                    final color = TaskCategoriesExtension(cat)
-                        .color; // Using extension wrapper if needed or direct property
-                    // Note: Your extension syntax might be `cat.color` if extension is applicable directly
-                    // Assuming extension on TaskCategories is imported
-
-                    return ChoiceChip(
-                      label: Text(
-                        cat.name.capitalize(),
-                        style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.grey),
-                      ),
-                      selected: isSelected,
-                      selectedColor: color, // Chip color when selected
-                      backgroundColor:
-                          Colors.grey[900], // Dark background for unselected
-                      shape: StadiumBorder(
-                          side: BorderSide(
-                              color: isSelected
-                                  ? Colors.transparent
-                                  : Colors.grey[800]!)),
-                      onSelected: (selected) {
-                        if (selected) {
-                          ref.read(categoryProvider.notifier).state = cat;
-                        }
-                      },
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // 3. Details Grid (Date, Time)
-              Text('Details',
-                  style: TextStyle(color: Colors.grey, fontSize: 16)),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildDetailCard(
-                      icon: Icons.calendar_today,
-                      title: DateFormat.yMMMd().format(selectedDate),
-                      subtitle: 'Date',
-                      onTap: () => Helpers.selectDate(context, ref),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildDetailCard(
-                      icon: Icons.access_time,
-                      title: Helpers.timeToString(selectedTime),
-                      subtitle: 'Time',
-                      onTap: () async {
-                        final picked = await showTimePicker(
-                            context: context, initialTime: selectedTime);
-                        if (picked != null)
-                          ref.read(timeProvider.notifier).state = picked;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // 4. Note Input
+              // Main Task Card
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[900],
-                  borderRadius: BorderRadius.circular(16),
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    if (!isDark)
+                      BoxShadow(
+                        color: Colors.grey.withValues(alpha: 0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                  ],
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: TextField(
-                  controller: _noteController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    hintText: 'Add a note...',
-                    icon: Icon(Icons.notes, color: Colors.grey),
-                    border: InputBorder.none,
-                  ),
-                  maxLines: 4,
-                  minLines: 1,
+                child: Column(
+                  children: [
+                    // Header: Checkbox + Title
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Visual Checkbox (Decorative)
+                          Container(
+                            margin: const EdgeInsets.only(top: 12, right: 16),
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.grey[600]!
+                                    : Colors.grey[400]!,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          // Title Input
+                          Expanded(
+                            child: TextField(
+                              controller: _titleController,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        isDark ? Colors.white : Colors.black87,
+                                  ),
+                              decoration: InputDecoration(
+                                hintText: 'What needs to be done?',
+                                hintStyle: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[600]
+                                      : Colors.grey[400],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              maxLines: null,
+                              textCapitalization: TextCapitalization.sentences,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Divider
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      child: Divider(
+                          color: isDark ? Colors.grey[800] : Colors.grey[100]),
+                    ),
+
+                    // Note Input
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(60, 0, 20, 20),
+                      child: TextField(
+                        controller: _noteController,
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[300] : Colors.grey[700],
+                          fontSize: 15,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Description',
+                          hintStyle: TextStyle(color: Colors.grey[500]),
+                          border: InputBorder.none,
+                          icon: Icon(Icons.notes,
+                              color:
+                                  isDark ? Colors.grey[600] : Colors.grey[400],
+                              size: 20),
+                        ),
+                        maxLines: null,
+                        minLines: 2,
+                      ),
+                    ),
+
+                    // Action Bar (Bottom of Card)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.grey[900]!.withValues(alpha: 0.5)
+                            : Colors.grey[50]!,
+                        borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(24)),
+                        border: Border(
+                          top: BorderSide(
+                            color:
+                                isDark ? Colors.grey[800]! : Colors.grey[100]!,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          // Date Picker
+                          _buildMiniActionButton(
+                            context,
+                            icon: Icons.calendar_today_rounded,
+                            label: Helpers.dateToString(ref.watch(dateProvider),
+                                showYear: false),
+                            isActive: true, // Always show date
+                            onTap: () => Helpers.selectDate(context, ref),
+                          ),
+                          const SizedBox(width: 8),
+
+                          // Time Picker
+                          _buildMiniActionButton(
+                            context,
+                            icon: Icons.access_time_rounded,
+                            label:
+                                Helpers.timeToString(ref.watch(timeProvider)),
+                            isActive: true,
+                            onTap: () async {
+                              final picked = await showTimePicker(
+                                  context: context,
+                                  initialTime: ref.read(timeProvider));
+                              if (picked != null) {
+                                ref.read(timeProvider.notifier).state = picked;
+                              }
+                            },
+                          ),
+                          const SizedBox(width: 8),
+
+                          // Category Picker (Tag)
+                          Consumer(builder: (context, ref, _) {
+                            final cat = ref.watch(categoryProvider);
+                            return _buildMiniActionButton(
+                              context,
+                              icon: Icons.local_offer_rounded,
+                              label: cat.name.capitalize(),
+                              color: cat.color,
+                              isActive: true,
+                              onTap: () => _showCategoryPicker(context),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
 
-              // 5. Action Buttons (Cancel / Create)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => context.pop(),
-                    child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+              // Create Button (Floating style below card)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isSaving ? null : _createTask,
+                  icon: _isSaving
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : const Icon(Icons.add_rounded, color: Colors.white),
+                  label: Text(_isSaving ? 'Creating...' : 'Create Task',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 4,
+                    shadowColor: colorScheme.primary.withValues(alpha: 0.4),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
-                  const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: _isSaving ? null : _createTask,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      shape: StadiumBorder(),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    ),
-                    child: _isSaving
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2))
-                        : const Text('Create Task',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold)),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
@@ -312,36 +361,100 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
     );
   }
 
-  Widget _buildDetailCard({
+  // Mini Action Button for the card footer
+  Widget _buildMiniActionButton(
+    BuildContext context, {
     required IconData icon,
-    required String title,
-    required String subtitle,
+    required String label,
     required VoidCallback onTap,
+    bool isActive = false,
+    Color? color,
   }) {
-    return GestureDetector(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final contentColor = color ??
+        (isActive ? (isDark ? Colors.blueAccent : Colors.blue) : Colors.grey);
+
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(16),
+          color: isDark ? Colors.grey[800] : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.grey[400], size: 20),
-            const SizedBox(height: 8),
-            Text(title,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16)),
-            const SizedBox(height: 4),
-            Text(subtitle,
-                style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            Icon(icon, size: 16, color: contentColor),
+            const SizedBox(width: 6),
+            Text(label,
+                style: TextStyle(
+                  color: isDark ? Colors.grey[300] : Colors.grey[800],
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                )),
           ],
         ),
       ),
+    );
+  }
+
+  void _showCategoryPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          height: 300,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Select Category',
+                  style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 20),
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 2.5,
+                  ),
+                  itemCount: TaskCategories.values.length,
+                  itemBuilder: (context, index) {
+                    final cat = TaskCategories.values[index];
+                    return InkWell(
+                      onTap: () {
+                        ref.read(categoryProvider.notifier).state = cat;
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: cat.color.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: cat.color),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(cat.name.capitalize(),
+                            style: TextStyle(
+                                color: cat.color, fontWeight: FontWeight.bold)),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

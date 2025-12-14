@@ -26,8 +26,11 @@ class Helpers {
     }
   }
 
-  static String dateToString(DateTime date) {
-    return DateFormat.yMMMd().format(date);
+  static String dateToString(DateTime date, {bool showYear = true}) {
+    if (showYear) {
+      return DateFormat('d MMM yyyy').format(date);
+    }
+    return DateFormat('d MMM').format(date);
   }
 
   // Vérifie si une tâche correspond à la date sélectionnée

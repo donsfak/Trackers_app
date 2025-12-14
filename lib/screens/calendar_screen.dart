@@ -59,7 +59,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               shape: BoxShape.circle,
             ),
             todayDecoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.3),
+              color: Colors.blue.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
             markerDecoration: const BoxDecoration(
